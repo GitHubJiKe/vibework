@@ -125,9 +125,10 @@ struct VibeworkMain {
                 print("  请到 系统设置 → 隐私与安全性 → 辅助功能 勾选运行本程序的终端，然后重启本程序。")
             }
 
-            var contentFrame = CGRect.zero
-            do {
-                if args.contains("--screen") {
+            if args.contains("--screen") {
+                // 整屏捕获：单源，控制指令作用于整屏
+                var contentFrame = CGRect.zero
+                do {
                     let displays = try await CaptureEngine.availableDisplays()
                     guard let display = displays.first else {
                         print("没有可捕获的显示器")
@@ -135,41 +136,104 @@ struct VibeworkMain {
                     }
                     contentFrame = display.frame
                     try await engine.start(display: display, maxWidth: maxWidth)
-                } else {
-                    let window: SCWindow
-                    if let windowIndex {
-                        guard windows.indices.contains(windowIndex) else {
-                            print("窗口索引无效。先运行 --list 查看可用窗口。")
-                            return
-                        }
-                        window = windows[windowIndex]
-                    } else if let picked = pickWindow(from: windows) {
-                        window = picked
-                        print("自动选中：\(describe(window))")
-                    } else {
-                        window = windows[0]
-                        print("未匹配到常用编程窗口，使用：\(describe(window))")
-                    }
-                    contentFrame = window.frame
-                    injector.targetProcessID = window.owningApplication?.processID
-                    try await engine.start(window: window, maxWidth: maxWidth)
-                }
-            } catch {
-                print("启动捕获失败：\(error.localizedDescription)")
-                print("若提示权限不足，请在 系统设置 → 隐私与安全性 → 屏幕录制 中授权后重试。")
-                return
-            }
-
-            // 手机端控制指令入口：解析 JSON → 注入鼠标/键盘。
-            server.onText { json, _ in
-                guard let data = json.data(using: .utf8),
-                      let cmd = try? JSONDecoder().decode(RemoteCommand.self, from: data) else {
+                } catch {
+                    print("启动捕获失败：\(error.localizedDescription)")
+                    print("若提示权限不足，请在 系统设置 → 隐私与安全性 → 屏幕录制 中授权后重试。")
                     return
                 }
-                if cmd.type != "mouse" || cmd.action != "move" {
-                    print("收到控制指令：\(cmd.type)\(cmd.action.map { "/\($0)" } ?? "")")
+                server.onText { json, _ in
+                    guard let data = json.data(using: .utf8),
+                          let cmd = try? JSONDecoder().decode(RemoteCommand.self, from: data) else { return }
+                    if cmd.type != "mouse" || cmd.action != "move" {
+                        print("收到控制指令：\(cmd.type)\(cmd.action.map { "/\($0)" } ?? "")")
+                    }
+                    injector.handle(cmd, contentFrame: contentFrame)
                 }
-                injector.handle(cmd, contentFrame: contentFrame)
+            } else {
+                // 窗口捕获：单/多应用（按需切换，同一时刻只捕获一个窗口）
+                var appWindows: [(window: SCWindow, index: Int)] = []
+                if let appsArg = value(for: "--apps", in: args) {
+                    let indices = appsArg.split(separator: ",").compactMap { Int($0.trimmingCharacters(in: .whitespaces)) }
+                    for idx in indices {
+                        guard windows.indices.contains(idx) else {
+                            print("窗口索引 \(idx) 无效。先运行 --list 查看可用窗口。")
+                            return
+                        }
+                        if !appWindows.contains(where: { $0.index == idx }) {
+                            appWindows.append((windows[idx], idx))
+                        }
+                    }
+                } else if let windowIndex {
+                    guard windows.indices.contains(windowIndex) else {
+                        print("窗口索引无效。先运行 --list 查看可用窗口。")
+                        return
+                    }
+                    appWindows = [(windows[windowIndex], windowIndex)]
+                } else {
+                    if let picked = pickWindow(from: windows) {
+                        let idx = windows.firstIndex(where: { $0.windowID == picked.windowID }) ?? 0
+                        appWindows = [(picked, idx)]
+                        print("自动选中：\(describe(picked))")
+                    } else {
+                        appWindows = [(windows[0], 0)]
+                        print("未匹配到常用编程窗口，使用：\(describe(windows[0]))")
+                    }
+                }
+                guard !appWindows.isEmpty else { return }
+
+                var activeIndex = 0
+                var activeWindow = appWindows[0].window
+                do {
+                    try await engine.start(window: activeWindow, maxWidth: maxWidth)
+                } catch {
+                    print("启动捕获失败：\(error.localizedDescription)")
+                    print("若提示权限不足，请在 系统设置 → 隐私与安全性 → 屏幕录制 中授权后重试。")
+                    return
+                }
+                injector.targetProcessID = activeWindow.owningApplication?.processID
+                server.sourceCount = appWindows.count
+                server.apps = appWindows.map { $0.window.owningApplication?.applicationName ?? "?" }
+                if appWindows.count > 1 {
+                    print("已加载 \(appWindows.count) 个应用（网页端顶部可切换）：")
+                    for (i, w) in appWindows.enumerated() {
+                        print("  [\(i)] \(w.window.owningApplication?.applicationName ?? "?")")
+                    }
+                }
+
+                // 手机端控制指令入口：切换应用（按需停旧流启新流）或注入鼠标/键盘。
+                server.onText { json, _ in
+                    if let obj = try? JSONSerialization.jsonObject(with: Data(json.utf8)) as? [String: Any],
+                       obj["type"] as? String == "switch",
+                       let index = obj["index"] as? Int,
+                       appWindows.indices.contains(index),
+                       index != activeIndex {
+                        let nextWindow = appWindows[index].window
+                        Task {
+                            await engine.stop()
+                            do {
+                                try await engine.start(window: nextWindow, maxWidth: maxWidth)
+                                activeIndex = index
+                                activeWindow = nextWindow
+                                injector.targetProcessID = nextWindow.owningApplication?.processID
+                                injector.resetPointer()
+                                print("已切换到 \(nextWindow.owningApplication?.applicationName ?? "?")")
+                                server.notifySwitch(ok: true, index: index)
+                            } catch {
+                                print("切换失败：\(error.localizedDescription)")
+                                try? await engine.start(window: activeWindow, maxWidth: maxWidth)
+                                server.notifySwitch(ok: false, index: index, error: error.localizedDescription)
+                            }
+                        }
+                        return
+                    }
+                    guard let data = json.data(using: .utf8),
+                          let cmd = try? JSONDecoder().decode(RemoteCommand.self, from: data) else { return }
+                    if cmd.type != "mouse" || cmd.action != "move" {
+                        print("收到控制指令：\(cmd.type)\(cmd.action.map { "/\($0)" } ?? "")")
+                    }
+                    injector.targetProcessID = activeWindow.owningApplication?.processID
+                    injector.handle(cmd, contentFrame: activeWindow.frame)
+                }
             }
 
             // 启动 8 秒后诊断一次推流是否真的有帧，方便定位问题。
@@ -367,6 +431,7 @@ struct VibeworkMain {
 
     选项：
       --window <序号>   捕获指定窗口（配合 --list 查看序号）
+      --apps <序号,序号,...>  同时加载多个窗口，网页端顶部可切换（如 --apps 2,3,4）
       --port <端口>     监听端口，默认 8080
       --fps <1-30>      帧率，默认 15
       --quality <0-1>   JPEG 质量，默认 0.65
@@ -382,6 +447,7 @@ struct VibeworkMain {
     示例：
       vibework --list
       vibework --window 2 --port 9090 --fps 20
+      vibework --apps 2,3,4 --port 9090 --fps 15
       vibework --screen --port 8090
       vibework --snapshot
       vibework --window 2 --port 8090 --token mypass --deepseek-key sk-xxxx
