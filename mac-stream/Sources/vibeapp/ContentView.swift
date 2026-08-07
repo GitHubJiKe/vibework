@@ -63,6 +63,9 @@ struct ContentView: View {
                 Text("选择要控制的应用")
                     .font(.headline)
                 Spacer()
+                Text("仅显示受支持应用")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
                 if model.isLoadingWindows {
                     ProgressView().controlSize(.small)
                 }

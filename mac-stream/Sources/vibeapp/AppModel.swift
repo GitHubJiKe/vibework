@@ -64,7 +64,7 @@ final class AppModel: ObservableObject {
         isLoadingWindows = true
         defer { isLoadingWindows = false }
         do {
-            let list = try await CaptureEngine.availableWindows(onScreenOnly: false)
+            let list = try await CaptureEngine.availableWindows(onScreenOnly: false, filterToSupported: true)
             windowObjects = list
             windows = list.enumerated().map { i, w in
                 WindowInfo(
