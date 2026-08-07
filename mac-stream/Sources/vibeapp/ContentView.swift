@@ -4,6 +4,7 @@ import VibeCore
 
 struct ContentView: View {
     @EnvironmentObject private var model: AppModel
+    @State private var showQR = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -21,6 +22,9 @@ struct ContentView: View {
         }
         .frame(minWidth: 660, minHeight: 560)
         .onAppear { checkPermissions() }
+        .sheet(isPresented: $showQR) {
+            QRCodeView(url: model.serverURL)
+        }
     }
 
     // MARK: - 状态栏
@@ -38,6 +42,7 @@ struct ContentView: View {
                 Spacer()
                 Text(model.serverURL)
                     .font(.system(.body, design: .monospaced))
+                Button("二维码") { showQR = true }
                 Button("复制地址") {
                     NSPasteboard.general.clearContents()
                     NSPasteboard.general.setString(model.serverURL, forType: .string)
