@@ -1,6 +1,6 @@
 /// 内嵌在服务器里的远程控制页（iPhone Safari / 任意浏览器）。
 /// __TOKEN_REQUIRED__ 是占位符，服务器会根据是否设置口令替换成 true/false。
-let viewerHTML = """
+public let viewerHTML = """
 <!doctype html>
 <html lang="zh-CN">
 <head>

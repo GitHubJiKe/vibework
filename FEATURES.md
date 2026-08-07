@@ -76,6 +76,17 @@
 
 ## 十、快速上手
 
+**桌面 App（推荐）**：
+
+```bash
+make app            # 生成 build/VibePilot.app
+open build/VibePilot.app
+```
+
+在 App 主窗口勾选应用 → 设置端口/口令/DeepSeek Key → 点「开始推流」；菜单栏图标常驻，可查看状态、切换应用、停止服务。
+
+**命令行方式**：
+
 ```bash
 # 查看可捕获窗口
 ./mac-stream/.build/release/vibework --list
@@ -93,5 +104,6 @@ make build
 ## 十一、技术栈
 
 - macOS：Swift + ScreenCaptureKit + CoreGraphics（CGEvent 注入）+ Network（NWListener WebSocket）+ VideoToolbox/CoreImage（JPEG）
-- 网页端：原生 HTML/JS（无框架），内嵌于 Swift 源码 `Viewer.swift`（开发副本 `web/viewer.html`）
+- 桌面 App：SwiftUI + AppKit（主窗口、菜单栏、开机自启 SMAppService），打包脚本 `scripts/build-app.sh`
+- 网页端：原生 HTML/JS（无框架），内嵌于 VibeCore `Viewer.swift`（开发副本 `web/viewer.html`）
 - AI：DeepSeek API（`deepseek-v4-flash`）

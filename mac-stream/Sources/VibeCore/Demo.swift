@@ -2,8 +2,8 @@ import AppKit
 import CoreGraphics
 
 /// 演示画面：不依赖屏幕捕获，用于联调推流链路。
-enum Demo {
-    static func makeImage(frame: Int) -> CGImage {
+public enum Demo {
+    public static func makeImage(frame: Int) -> CGImage {
         let width = 480, height = 300
         let ctx = CGContext(
             data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: 0,

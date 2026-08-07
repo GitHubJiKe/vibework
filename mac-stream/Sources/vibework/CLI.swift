@@ -3,6 +3,7 @@ import ScreenCaptureKit
 import AppKit
 import CoreGraphics
 import ApplicationServices
+import VibeCore
 
 @main
 struct VibeworkMain {

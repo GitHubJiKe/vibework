@@ -1,22 +1,24 @@
 import Foundation
 
 /// 调用 DeepSeek API 对语音转写/手输文本做错别字纠正和润色。
-final class TextOptimizer {
+public final class TextOptimizer {
     private var key: String?
 
-    func setKey(_ newKey: String?) {
+    public init() {}
+
+    public func setKey(_ newKey: String?) {
         key = newKey
     }
 
-    var hasKey: Bool {
+    public var hasKey: Bool {
         !(key?.isEmpty ?? true)
     }
 
-    enum OptimizeError: LocalizedError {
+    public enum OptimizeError: LocalizedError {
         case noKey
         case badResponse(String)
 
-        var errorDescription: String? {
+        public var errorDescription: String? {
             switch self {
             case .noKey: return "未配置 DeepSeek API Key"
             case .badResponse(let message): return message
@@ -25,7 +27,7 @@ final class TextOptimizer {
     }
 
     /// 把语音转写/手输文本交给 DeepSeek 润色，返回优化后的文本。
-    func optimize(_ text: String) async throws -> String {
+    public func optimize(_ text: String) async throws -> String {
         guard let key else { throw OptimizeError.noKey }
 
         let url = URL(string: "https://api.deepseek.com/chat/completions")!
