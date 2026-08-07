@@ -4,29 +4,31 @@ import CoreGraphics
 import AppKit
 
 /// 客户端（手机浏览器）发来的控制指令。
-struct RemoteCommand: Decodable {
-    let type: String          // mouse / scroll / key / text；scroll: dx>0 右移 / dy>0 下移（单位：档）
-    let action: String?       // mouse: move/down/up/click/doubleclick/rightclick
-    let x: Double?            // 归一化坐标 0-1（左上原点）
-    let y: Double?
-    let dx: Double?
-    let dy: Double?
-    let key: String?
-    let flags: [String]?      // cmd/shift/alt/ctrl
-    let text: String?
-    let edge: String?         // scroll: top/bottom 滚到顶部/底部
-    let enter: Bool?          // text: 输入完成后自动补一次回车（发送）
+public struct RemoteCommand: Decodable {
+    public let type: String          // mouse / scroll / key / text；scroll: dx>0 右移 / dy>0 下移（单位：档）
+    public let action: String?       // mouse: move/down/up/click/doubleclick/rightclick
+    public let x: Double?            // 归一化坐标 0-1（左上原点）
+    public let y: Double?
+    public let dx: Double?
+    public let dy: Double?
+    public let key: String?
+    public let flags: [String]?      // cmd/shift/alt/ctrl
+    public let text: String?
+    public let edge: String?         // scroll: top/bottom 滚到顶部/底部
+    public let enter: Bool?          // text: 输入完成后自动补一次回车（发送）
 }
 
 /// 用 CGEvent 把手机端的控制指令注入到 Mac 的鼠标/键盘。
 /// 需要「辅助功能（Accessibility）」权限。
-final class InputInjector {
+public final class InputInjector {
 
-    static var isTrusted: Bool { AXIsProcessTrusted() }
+    public static var isTrusted: Bool { AXIsProcessTrusted() }
+
+    public init() {}
 
     /// 被控窗口所属 App 的进程号；注入前自动把它激活到最前，
     /// 避免文字/按键落入其他 App（比如正在操作的 Codex）。
-    var targetProcessID: pid_t?
+    public var targetProcessID: pid_t?
 
     /// 最近一次鼠标/触控落点（全局坐标）。滚动优先发生在该位置，
     /// 保证滚动作用于用户正在看的区域；从未操作过则回退到窗口中心。
@@ -35,7 +37,7 @@ final class InputInjector {
     private var lastScrollAnchor: CGPoint?
 
     /// 切换被控应用后调用：清掉旧窗口的鼠标位置记忆，滚动回退到新窗口中心。
-    func resetPointer() {
+    public func resetPointer() {
         lastPointer = nil
         lastScrollAnchor = nil
     }
@@ -61,7 +63,7 @@ final class InputInjector {
         ";": 41, "'": 39, ",": 43, ".": 47, "/": 44
     ]
 
-    func handle(_ cmd: RemoteCommand, contentFrame: CGRect) {
+    public func handle(_ cmd: RemoteCommand, contentFrame: CGRect) {
         switch cmd.type {
         case "mouse":
             guard let x = cmd.x, let y = cmd.y else { return }

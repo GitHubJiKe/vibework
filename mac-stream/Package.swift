@@ -5,6 +5,8 @@ let package = Package(
     name: "vibework",
     platforms: [.macOS(.v13)],
     targets: [
-        .executableTarget(name: "vibework", path: "Sources/vibework")
+        .target(name: "VibeCore", path: "Sources/VibeCore"),
+        .executableTarget(name: "vibework", dependencies: ["VibeCore"], path: "Sources/vibework"),
+        .executableTarget(name: "vibeapp", dependencies: ["VibeCore"], path: "Sources/vibeapp")
     ]
 )

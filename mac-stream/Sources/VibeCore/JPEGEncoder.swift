@@ -5,13 +5,13 @@ import ImageIO
 import UniformTypeIdentifiers
 import VideoToolbox
 
-enum JPEGEncoder {
+public enum JPEGEncoder {
     /// 共享 CIContext，避免每帧重建（CIContext 可跨线程使用）。
     private static let ciContext = CIContext(options: [.useSoftwareRenderer: false])
 
     /// CVPixelBuffer → JPEG Data。
     /// 优先 VideoToolbox 快速路径；失败时回退 CoreImage 渲染，兼容各种像素格式。
-    static func encode(_ pixelBuffer: CVPixelBuffer, quality: Double) -> Data? {
+    public static func encode(_ pixelBuffer: CVPixelBuffer, quality: Double) -> Data? {
         var cgImage: CGImage?
         let status = VTCreateCGImageFromCVPixelBuffer(pixelBuffer, options: nil, imageOut: &cgImage)
         if status == noErr, let image = cgImage {
@@ -23,7 +23,7 @@ enum JPEGEncoder {
     }
 
     /// CGImage → JPEG Data。
-    static func encode(_ image: CGImage, quality: Double) -> Data? {
+    public static func encode(_ image: CGImage, quality: Double) -> Data? {
         let mutable = NSMutableData()
         guard let destination = CGImageDestinationCreateWithData(
             mutable, UTType.jpeg.identifier as CFString, 1, nil

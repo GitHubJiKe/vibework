@@ -5,7 +5,7 @@ import CryptoKit
 /// 基于 Network 框架的极简 WebSocket 服务器：
 /// - GET /           返回内嵌查看页
 /// - GET /stream     WebSocket 升级，后续接收二进制帧（JPEG）
-final class WebSocketServer {
+public final class WebSocketServer {
     private struct Client {
         let conn: NWConnection
         var sending = false
@@ -15,7 +15,7 @@ final class WebSocketServer {
 
     private let listener: NWListener
     private let viewerHTML: String
-    var apps: [String] = []
+    public var apps: [String] = []
     private var clients: [ObjectIdentifier: Client] = [:]
     private var receiveBuffers: [ObjectIdentifier: Data] = [:]
     private var onTextMessage: ((String, Int) -> Void)?
@@ -26,9 +26,9 @@ final class WebSocketServer {
     private var lastSendAt: [Int: Date] = [:]
     private let idleResendInterval: TimeInterval = 1.0
     /// 捕获源数量（多应用窗口数）。网页端切换应用时 index 必须小于该值。
-    var sourceCount = 1
+    public var sourceCount = 1
 
-    init(port: UInt16, viewerHTML: String, token: String?, apps: [String] = []) throws {
+    public init(port: UInt16, viewerHTML: String, token: String?, apps: [String] = []) throws {
         self.viewerHTML = viewerHTML
         if !apps.isEmpty { self.apps = apps }
         self.token = token
@@ -38,7 +38,7 @@ final class WebSocketServer {
     }
 
     /// 启动监听；端口被占用等错误会以 throw 形式返回，便于命令行优雅退出。
-    func start() async throws {
+    public func start() async throws {
         try await withCheckedThrowingContinuation { continuation in
             var didResume = false
             listener.newConnectionHandler = { [weak self] conn in
@@ -60,8 +60,22 @@ final class WebSocketServer {
         }
     }
 
+    /// 停止监听并断开所有客户端（App 停止/重启服务用）。
+    public func stop() {
+        queue.sync {
+            listener.cancel()
+            for (_, client) in clients {
+                client.conn.cancel()
+            }
+            clients.removeAll()
+            receiveBuffers.removeAll()
+            lastFrames.removeAll()
+            lastSendAt.removeAll()
+        }
+    }
+
     /// 推一帧给订阅了该捕获源的客户端（始终发送最新帧，繁忙时丢弃中间帧）。
-    func broadcast(frame: Data, source: Int = 0) {
+    public func broadcast(frame: Data, source: Int = 0) {
         let encoded = encodeFrame(frame)
         queue.async { [weak self] in
             guard let self else { return }
@@ -73,7 +87,7 @@ final class WebSocketServer {
 
     /// 屏幕画面静止时定期重发各源最后一帧，保证客户端始终能看到当前屏幕。
     /// 如果帧正在正常流动则跳过，避免重复发送。
-    func broadcastLastFrameIfIdle() {
+    public func broadcastLastFrameIfIdle() {
         queue.async { [weak self] in
             guard let self else { return }
             for (source, frame) in self.lastFrames {
@@ -87,17 +101,17 @@ final class WebSocketServer {
     }
 
     /// 注册客户端文本消息（控制指令）回调。
-    func onText(_ handler: @escaping (String, Int) -> Void) {
+    public func onText(_ handler: @escaping (String, Int) -> Void) {
         onTextMessage = handler
     }
 
     /// 设置 DeepSeek API Key（启动参数或页面 ⚙ 设置）。
-    func setDeepSeekKey(_ key: String?) {
+    public func setDeepSeekKey(_ key: String?) {
         textOptimizer.setKey(key)
     }
 
     /// 多应用切换结果（切流完成后由 CLI 调用，广播给所有客户端）。
-    func notifySwitch(ok: Bool, index: Int, error: String? = nil) {
+    public func notifySwitch(ok: Bool, index: Int, error: String? = nil) {
         let err = error.map { ", \"error\":\(Self.jsonString($0))" } ?? ""
         let frame = "{\"type\":\"switch_ok\",\"ok\":\(ok),\"index\":\(index)\(err)}"
         queue.async { [weak self] in

@@ -9,5 +9,8 @@ mac-stream/.build/
 *.png
 *.log
 
+# App 打包产物
+build/
+
 # 本地 Key 存储（不应提交）
 .vibework/

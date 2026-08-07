@@ -5,13 +5,13 @@ import CoreVideo
 import CoreGraphics
 
 /// ScreenCaptureKit 窗口捕获引擎。
-final class CaptureEngine: NSObject {
-    typealias FrameHandler = (CVPixelBuffer) -> Void
+public final class CaptureEngine: NSObject {
+    public typealias FrameHandler = (CVPixelBuffer) -> Void
 
-    enum CaptureError: LocalizedError {
+    public enum CaptureError: LocalizedError {
         case timeout
         case unsupported
-        var errorDescription: String? {
+        public var errorDescription: String? {
             switch self {
             case .timeout:
                 return "等待屏幕内容超时（请确认已授予屏幕录制权限）"
@@ -31,7 +31,7 @@ final class CaptureEngine: NSObject {
     private var nudgeToggle = false
 
     /// 一次性整屏截图（诊断用）。正常返回图像；如果显示器熄屏/锁屏，可能返回黑图或失败。
-    static func snapshot(display: SCDisplay, maxWidth: Int) async throws -> CGImage? {
+    public static func snapshot(display: SCDisplay, maxWidth: Int) async throws -> CGImage? {
         guard #available(macOS 14.0, *) else { throw CaptureError.unsupported }
         let filter = SCContentFilter(display: display, excludingWindows: [])
         let config = SCStreamConfiguration()
@@ -50,7 +50,7 @@ final class CaptureEngine: NSObject {
         }
     }
 
-    init(onFrame: @escaping FrameHandler) {
+    public init(onFrame: @escaping FrameHandler) {
         self.onFrame = onFrame
         super.init()
     }
@@ -58,7 +58,7 @@ final class CaptureEngine: NSObject {
     /// 列出当前可捕获的窗口（按 App 名排序）。
     /// 列出当前可捕获的窗口（按 App 名排序）。加了超时保护，
     /// 避免权限未授予时 API 一直挂起。
-    static func availableWindows(timeout: TimeInterval = 8) async throws -> [SCWindow] {
+    public static func availableWindows(timeout: TimeInterval = 8) async throws -> [SCWindow] {
         try await withThrowingTaskGroup(of: [SCWindow].self) { group in
             group.addTask {
                 let content = try await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: true)
@@ -90,7 +90,7 @@ final class CaptureEngine: NSObject {
     }
 
     /// 列出当前显示器（用于 --screen 整屏捕获诊断）。
-    static func availableDisplays(timeout: TimeInterval = 8) async throws -> [SCDisplay] {
+    public static func availableDisplays(timeout: TimeInterval = 8) async throws -> [SCDisplay] {
         try await withThrowingTaskGroup(of: [SCDisplay].self) { group in
             group.addTask {
                 let content = try await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: true)
@@ -107,7 +107,7 @@ final class CaptureEngine: NSObject {
     }
 
     /// 开始捕获指定窗口。maxWidth 控制输出宽度（像素），按比例缩放。
-    func start(window: SCWindow, maxWidth: Int) async throws {
+    public func start(window: SCWindow, maxWidth: Int) async throws {
         let scale = min(2.0, Double(maxWidth) / Double(max(1, Int(window.frame.width))))
         let config = SCStreamConfiguration()
         config.width = max(1, Int(window.frame.width * scale))
@@ -131,7 +131,7 @@ final class CaptureEngine: NSObject {
     }
 
     /// 开始捕获整个显示器（用于诊断窗口捕获不出帧的情况，也可直接当兜底方案）。
-    func start(display: SCDisplay, maxWidth: Int) async throws {
+    public func start(display: SCDisplay, maxWidth: Int) async throws {
         let scale = min(2.0, Double(maxWidth) / Double(max(1, display.width)))
         let config = SCStreamConfiguration()
         config.width = max(1, Int(Double(display.width) * scale))
@@ -154,7 +154,7 @@ final class CaptureEngine: NSObject {
 
     /// 屏幕画面完全静止时 ScreenCaptureKit 不产生新帧；
     /// 通过微调 minimumFrameInterval 触发系统重发一帧（已知的有效做法）。
-    func nudgeForIdleFrame() {
+    public func nudgeForIdleFrame() {
         guard let stream else { return }
         nudgeToggle.toggle()
         let config = SCStreamConfiguration()
@@ -168,7 +168,7 @@ final class CaptureEngine: NSObject {
         stream.updateConfiguration(config) { _ in }
     }
 
-    func stop() async {
+    public func stop() async {
         guard let s = stream else { return }
         try? await s.stopCapture()
         stream = nil
@@ -176,7 +176,7 @@ final class CaptureEngine: NSObject {
 }
 
 extension CaptureEngine: SCStreamOutput {
-    func stream(_ stream: SCStream, didOutputSampleBuffer sampleBuffer: CMSampleBuffer, of type: SCStreamOutputType) {
+    public func stream(_ stream: SCStream, didOutputSampleBuffer sampleBuffer: CMSampleBuffer, of type: SCStreamOutputType) {
         guard type == .screen else { return }
         let status = frameStatus(from: sampleBuffer)
         if status != lastLoggedStatus {
@@ -222,17 +222,17 @@ extension CaptureEngine: SCStreamOutput {
 }
 
 extension CaptureEngine: SCStreamDelegate {
-    func stream(_ stream: SCStream, didStopWithError error: Error) {
+    public func stream(_ stream: SCStream, didStopWithError error: Error) {
         print("捕获意外停止：\(error.localizedDescription)")
     }
 
     @available(macOS 15.2, *)
-    func streamDidBecomeActive(_ stream: SCStream) {
+    public func streamDidBecomeActive(_ stream: SCStream) {
         print("捕获流已激活（被捕获窗口在屏幕上可见）")
     }
 
     @available(macOS 15.2, *)
-    func streamDidBecomeInactive(_ stream: SCStream) {
+    public func streamDidBecomeInactive(_ stream: SCStream) {
         print("⚠️ 捕获流失活：被捕获的窗口可能已关闭/最小化/移到其他桌面")
     }
 }
