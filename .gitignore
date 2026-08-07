@@ -1,0 +1,13 @@
+# macOS
+.DS_Store
+
+# SwiftPM 构建产物
+mac-stream/.build/
+
+# 本地截图/临时文件
+*.jpg
+*.png
+*.log
+
+# 本地 Key 存储（不应提交）
+.vibework/
