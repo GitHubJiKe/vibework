@@ -70,10 +70,20 @@ struct ContentView: View {
                     .controlSize(.small)
             }
             if model.windows.isEmpty {
-                Text("没有找到可捕获的窗口。\n请确认已打开目标应用，并已授予屏幕录制权限。")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .padding(.vertical, 20)
+                VStack(spacing: 8) {
+                    Text("没有找到可捕获的窗口")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                    Text("常见原因：未授予屏幕录制权限，或应用窗口被最小化。\n授权后请完全退出并重新打开 VibePilot。")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                    Button("打开屏幕录制设置") { openScreenRecordingSettings() }
+                        .controlSize(.small)
+                    Button("重新刷新") { Task { await model.refreshWindows() } }
+                        .controlSize(.small)
+                }
+                .padding(.vertical, 16)
             } else {
                 ScrollView {
                     LazyVStack(spacing: 4) {
@@ -194,6 +204,11 @@ struct ContentView: View {
 
     private func openAccessibilitySettings() {
         let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!
+        NSWorkspace.shared.open(url)
+    }
+
+    private func openScreenRecordingSettings() {
+        let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture")!
         NSWorkspace.shared.open(url)
     }
 }

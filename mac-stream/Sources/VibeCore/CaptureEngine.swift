@@ -55,13 +55,13 @@ public final class CaptureEngine: NSObject {
         super.init()
     }
 
-    /// 列出当前可捕获的窗口（按 App 名排序）。
     /// 列出当前可捕获的窗口（按 App 名排序）。加了超时保护，
     /// 避免权限未授予时 API 一直挂起。
-    public static func availableWindows(timeout: TimeInterval = 8) async throws -> [SCWindow] {
+    /// - Parameter onScreenOnly: true 只列当前屏幕上的窗口；false 也列出最小化/其他桌面的窗口
+    public static func availableWindows(timeout: TimeInterval = 8, onScreenOnly: Bool = true) async throws -> [SCWindow] {
         try await withThrowingTaskGroup(of: [SCWindow].self) { group in
             group.addTask {
-                let content = try await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: true)
+                let content = try await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: onScreenOnly)
                 return content.windows
                     .filter { window in
                         guard let app = window.owningApplication else { return false }

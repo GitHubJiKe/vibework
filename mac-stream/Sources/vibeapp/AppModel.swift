@@ -64,7 +64,7 @@ final class AppModel: ObservableObject {
         isLoadingWindows = true
         defer { isLoadingWindows = false }
         do {
-            let list = try await CaptureEngine.availableWindows()
+            let list = try await CaptureEngine.availableWindows(onScreenOnly: false)
             windowObjects = list
             windows = list.enumerated().map { i, w in
                 WindowInfo(
@@ -80,6 +80,7 @@ final class AppModel: ObservableObject {
             }
         } catch {
             appendLog("获取窗口列表失败：\(error.localizedDescription)")
+            appendLog("若提示屏幕录制权限：请到 系统设置 → 隐私与安全性 → 屏幕录制 勾选 VibePilot，然后完全退出并重新打开本 App")
         }
     }
 
