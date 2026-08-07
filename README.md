@@ -1,8 +1,29 @@
-# vibework — Mac 窗口远程预览（Phase 1）
+# vibework — 局域网 AI 编程遥控器
 
 把 Mac 上指定 App 的窗口（比如 Cursor / VS Code / Terminal）实时推流到同一局域网内的浏览器或 iPhone。
 
 这是「AI 编程远程桌面」的第一阶段最小闭环：**ScreenCaptureKit 窗口捕获 → JPEG 编码 → WebSocket 推流 → 手机网页查看**。零第三方依赖，不需要 Xcode，`swift build` 即可。
+
+## 桌面 App（VibePilot，推荐）
+
+> 想免命令行、图形化操作，直接用桌面 App 版本。App 与命令行版共用同一套核心引擎（VibeCore），功能完全一致；命令行版保留给喜欢终端或需要脚本化的场景。
+
+构建并打开：
+
+```bash
+make app
+open build/VibePilot.app
+```
+
+App 提供：
+
+- **主窗口**：实时列出可捕获窗口（名称 / 标题 / 尺寸），勾选一个或多个应用，点「开始推流」即启动；
+- **设置**：端口、帧率、质量、访问口令、DeepSeek Key、开机自启；
+- **菜单栏常驻**：运行状态、手机访问地址、快速切换应用、停止 / 打开主窗口 / 退出；
+- **日志面板**：诊断信息直接显示在 App 里，无需开终端；
+- **权限引导**：辅助功能未授权时一键跳转系统设置。
+
+首次运行同样需要授权：屏幕录制 + 辅助功能（App 与终端权限相互独立，各授权一次）。
 
 ## 为什么先做这个，而不是直接上 WebRTC
 
@@ -10,7 +31,7 @@
 - iPhone 的 Safari 原生支持 WebSocket + Blob，网页就能当客户端，不需要先写 iOS App。
 - 局域网下 1440p / 15fps JPEG 约 10-25 Mbps，体验足够；延迟通常在 200ms 左右。
 
-## 快速开始
+## 命令行方式（进阶）
 
 前置：macOS 13+，Xcode 命令行工具（`xcode-select --install`）。
 
@@ -88,17 +109,30 @@ node scripts/ws-test.js 8090
 ```
 mac-stream/
   Package.swift
+  Sources/VibeCore/     共享引擎库（CLI 与桌面 App 共用）
+    CaptureEngine.swift   ScreenCaptureKit 窗口捕获
+    InputInjector.swift   CGEvent 鼠标/键盘/滚轮注入
+    JPEGEncoder.swift     CVPixelBuffer → JPEG
+    WebSocketServer.swift 极简 WebSocket 服务器（Network 框架）
+    Viewer.swift          内嵌的手机端查看页
+    TextOptimizer.swift   DeepSeek 文本润色
+    KeyStore.swift        API Key 持久化
+    Demo.swift            演示画面生成器
   Sources/vibework/
     CLI.swift           命令行入口、窗口选择
-    CaptureEngine.swift ScreenCaptureKit 窗口捕获
-    JPEGEncoder.swift   CVPixelBuffer → JPEG
-    WebSocketServer.swift 极简 WebSocket 服务器（Network 框架）
-    Viewer.swift        内嵌的手机端查看页
-    Demo.swift          演示画面生成器
+  Sources/vibeapp/      桌面 App（VibePilot）
+    VibePilotApp.swift    AppKit 入口
+    AppModel.swift        UI 状态 / 窗口枚举 / 开机自启
+    ServerManager.swift   服务生命周期（启动/停止/切换应用）
+    ContentView.swift     主窗口（应用列表/设置/日志）
+    MenuBarController.swift 菜单栏常驻
 web/
   viewer.html           查看页独立副本（方便改样式）
 scripts/
   ws-test.js            联调脚本：验证 WebSocket 握手与二进制帧
+  check-deepseek.sh     DeepSeek Key 有效性校验
+  build-app.sh          VibePilot.app 打包脚本
+build/                  App 打包产物（git 忽略）
 ```
 
 ## 权限说明（重要）
