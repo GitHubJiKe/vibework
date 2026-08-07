@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# 构建 VibePilot.app（基于 swift build 产物打包，ad-hoc 签名，本机自用）
+# Build VibePilot.app from the swift build product, then sign it.
+# Uses a fixed self-signed certificate so TCC screen-recording permission
+# survives rebuilds (ad-hoc signing changes on every rebuild).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -44,6 +46,16 @@ cat > "$APP_DIR/Contents/Info.plist" <<'PLIST'
 </plist>
 PLIST
 
-codesign --force --sign - "$APP_DIR"
-echo "✅ 已生成 $APP_DIR"
-echo "   打开方式：open $APP_DIR"
+# Prefer a stable Apple Development identity so TCC screen-recording
+# permission survives rebuilds; fall back to ad-hoc otherwise.
+IDENTITY=$(security find-identity -v -p codesigning 2>/dev/null \
+    | grep -o 'Apple Development: [^"]*' | head -1)
+if [ -z "$IDENTITY" ]; then
+    echo "No Apple Development identity found; using ad-hoc signing."
+    codesign --force --sign - "$APP_DIR"
+else
+    echo "Signing with: $IDENTITY"
+    codesign --force --sign "$IDENTITY" "$APP_DIR"
+fi
+echo "OK: $APP_DIR"
+echo "Open it with: open $APP_DIR"

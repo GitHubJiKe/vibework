@@ -17,6 +17,7 @@ final class AppModel: ObservableObject {
     @Published var windows: [WindowInfo] = []
     @Published var selected: Set<Int> = []
     @Published var isLoadingWindows = false
+    @Published var lastRefreshError: String?
 
     // 设置
     @Published var port = "8090"
@@ -67,6 +68,7 @@ final class AppModel: ObservableObject {
         do {
             let list = try await CaptureEngine.availableWindows(onScreenOnly: false, filterToSupported: true)
             windowObjects = list
+            lastRefreshError = nil
             windows = list.enumerated().map { i, w in
                 WindowInfo(
                     id: i,
@@ -80,6 +82,7 @@ final class AppModel: ObservableObject {
                 selected = [0]
             }
         } catch {
+            lastRefreshError = error.localizedDescription
             appendLog("获取窗口列表失败：\(error.localizedDescription)")
             appendLog("若提示屏幕录制权限：请到 系统设置 → 隐私与安全性 → 屏幕录制 勾选 VibePilot，然后完全退出并重新打开本 App")
         }

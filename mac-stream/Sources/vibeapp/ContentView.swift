@@ -95,8 +95,14 @@ struct ContentView: View {
                     Text("没有找到可捕获的窗口")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
-                    Text("常见原因：未授予屏幕录制权限，或应用窗口被最小化。\n授权后请完全退出并重新打开 VibePilot。")
-                        .font(.caption)
+                    if let err = model.lastRefreshError {
+                        Text("错误详情：\(err)")
+                            .font(.caption)
+                            .foregroundStyle(.red)
+                            .multilineTextAlignment(.center)
+                    }
+                    Text("常见原因：未授予屏幕录制权限（授权后需完全退出并重新打开 VibePilot），\n或受支持应用（Codex/ChatGPT/Cursor/VS Code/iTerm2/终端）未打开。")
+                        .font(.caption2)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
                     Button("打开屏幕录制设置") { openScreenRecordingSettings() }
