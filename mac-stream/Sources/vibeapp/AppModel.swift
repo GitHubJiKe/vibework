@@ -40,6 +40,7 @@ final class AppModel: ObservableObject {
     var currentAppName: String? { manager.currentAppName }
     var appNames: [String] { manager.appNames }
     var currentIndex: Int { manager.currentIndex }
+    var accessibilityGranted: Bool { InputInjector.isTrusted }
 
     var serverURL: String {
         guard status == .running, let p = UInt16(port) else { return "" }
@@ -96,6 +97,10 @@ final class AppModel: ObservableObject {
         guard !chosen.isEmpty else {
             appendLog("请先选择至少一个应用窗口")
             return
+        }
+        if !InputInjector.isTrusted {
+            appendLog("⚠️ 辅助功能未授权：画面可推流但无法控制（发消息/点击/滚动）。")
+            appendLog("   请到 系统设置 → 隐私与安全性 → 辅助功能 勾选 VibePilot，然后完全退出并重新打开本 App")
         }
         KeyStore.save(deepseekKey.trimmingCharacters(in: .whitespaces).isEmpty ? nil : deepseekKey.trimmingCharacters(in: .whitespaces))
         do {

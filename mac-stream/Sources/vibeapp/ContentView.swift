@@ -8,6 +8,9 @@ struct ContentView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            if !model.accessibilityGranted {
+                accessibilityWarningBar
+            }
             statusBar
             Divider()
             HStack(alignment: .top, spacing: 16) {
@@ -25,6 +28,21 @@ struct ContentView: View {
         .sheet(isPresented: $showQR) {
             QRCodeView(url: model.serverURL)
         }
+    }
+
+    // MARK: - 辅助功能警告条
+    private var accessibilityWarningBar: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .foregroundStyle(.yellow)
+            Text("辅助功能未授权：画面可看，但无法控制（发消息 / 点击 / 滚动）。")
+                .font(.footnote)
+            Spacer()
+            Button("去授权") { openAccessibilitySettings() }
+                .controlSize(.small)
+        }
+        .padding(8)
+        .background(Color.yellow.opacity(0.15))
     }
 
     // MARK: - 状态栏
