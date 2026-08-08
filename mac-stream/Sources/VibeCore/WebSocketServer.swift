@@ -227,11 +227,44 @@ public final class WebSocketServer {
             var out = Data(header.utf8)
             out.append(body)
             sendHTTPResponse(out, conn: conn)
+        } else if method == "GET", path == "/manifest.json" {
+            // PWA 清单：iPhone Safari「添加到主屏幕」后以独立模式运行
+            let body = Data(Self.manifestJSON.utf8)
+            let header = "HTTP/1.1 200 OK\r\nContent-Type: application/manifest+json\r\nContent-Length: \(body.count)\r\nCache-Control: no-store\r\n\r\n"
+            var out = Data(header.utf8)
+            out.append(body)
+            sendHTTPResponse(out, conn: conn)
+        } else if method == "GET", path == "/icon-180.png" || path == "/icon-512.png" {
+            let fileName = path == "/icon-180.png" ? "web/icon-180.png" : "web/icon-512.png"
+            if let data = try? Data(contentsOf: URL(fileURLWithPath: fileName)) {
+                let header = "HTTP/1.1 200 OK\r\nContent-Type: image/png\r\nContent-Length: \(data.count)\r\nCache-Control: no-store\r\n\r\n"
+                var out = Data(header.utf8)
+                out.append(data)
+                sendHTTPResponse(out, conn: conn)
+            } else {
+                let response = "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n"
+                sendHTTPResponse(Data(response.utf8), conn: conn)
+            }
         } else {
             let response = "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n"
             sendHTTPResponse(Data(response.utf8), conn: conn)
         }
     }
+
+    /// PWA 清单（供添加到主屏幕使用）。
+    private static let manifestJSON = """
+    {
+      "name": "VibePilot",
+      "short_name": "VibePilot",
+      "display": "standalone",
+      "background_color": "#000000",
+      "theme_color": "#000000",
+      "start_url": "/",
+      "icons": [
+        { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+      ]
+    }
+    """
 
     /// 发送 HTTP 响应后不能立即 cancel()，否则尾部数据会被丢弃（实测截断）。
     /// 改为保持连接直到客户端关闭，再释放。
