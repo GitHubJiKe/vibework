@@ -1,5 +1,5 @@
 // 联调脚本：验证 WebSocket 握手和二进制帧（不依赖浏览器）。
-// 用法：先启动 `vibework --demo --port 8090`，再运行 `node scripts/ws-test.js 8090`
+// 用法：先启动 `vibepilot --demo --port 8090`，再运行 `node scripts/ws-test.js 8090`
 const net = require('net');
 const crypto = require('crypto');
 

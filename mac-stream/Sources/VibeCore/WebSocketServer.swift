@@ -21,7 +21,7 @@ public final class WebSocketServer {
     private var onTextMessage: ((String, Int) -> Void)?
     private let textOptimizer = TextOptimizer()
     private let token: String?
-    private let queue = DispatchQueue(label: "vibework.ws", qos: .userInitiated)
+    private let queue = DispatchQueue(label: "vibepilot.ws", qos: .userInitiated)
     private var lastFrames: [Int: Data] = [:]
     private var lastSendAt: [Int: Date] = [:]
     private let idleResendInterval: TimeInterval = 1.0

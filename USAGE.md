@@ -1,4 +1,4 @@
-# vibework 使用指南
+# VibePilot 使用指南
 
 > 局域网「AI 编程遥控器」：Mac 抓取目标应用（Cursor / Codex / VS Code / 终端等）窗口，
 > 实时推流到手机浏览器，手机端像遥控器一样查看和控制 Mac 上的 AI 编程。
@@ -12,7 +12,7 @@
 前置：macOS 13+，Xcode 命令行工具（`xcode-select --install`）。
 
 ```bash
-cd ~/Codes/vibework
+cd ~/Codes/VibePilot
 make build
 ```
 
@@ -21,7 +21,7 @@ make build
 ### 2. 查看可捕获的窗口
 
 ```bash
-./mac-stream/.build/release/vibework --list
+./mac-stream/.build/release/vibepilot --list
 ```
 
 输出形如：
@@ -35,7 +35,7 @@ make build
 ### 3. 启动推流
 
 ```bash
-./mac-stream/.build/release/vibework --window 1 --port 8090 --fps 15
+./mac-stream/.build/release/vibepilot --window 1 --port 8090 --fps 15
 ```
 
 启动后终端会显示访问地址和二维码：
@@ -55,7 +55,7 @@ iPhone 预览： http://192.168.1.54:8090   （同一 Wi-Fi 下）
 ### 4. 推荐参数（含口令与 AI 润色）
 
 ```bash
-./mac-stream/.build/release/vibework --window 1 --port 8090 --fps 15 \
+./mac-stream/.build/release/vibepilot --window 1 --port 8090 --fps 15 \
   --token 你的口令 \
   --deepseek-key sk-你的DeepSeekKey
 ```
@@ -72,14 +72,14 @@ iPhone 预览： http://192.168.1.54:8090   （同一 Wi-Fi 下）
 | `--quality <0-1>` | JPEG 质量，默认 0.65 |
 | `--max-width <宽>` | 输出最大宽度（像素），默认 1440 |
 | `--token <口令>` | 访问口令：手机打开页面需输入口令 |
-| `--deepseek-key <key>` | DeepSeek API Key：AI 润色（也保存到 `~/.vibework/deepseek.key`） |
+| `--deepseek-key <key>` | DeepSeek API Key：AI 润色（也保存到 `~/.VibePilot/deepseek.key`） |
 | `--screen` | 捕获整个主屏幕（窗口捕获异常时的诊断/兜底） |
 | `--demo` | 演示模式：不捕获屏幕，推模拟画面 |
 | `--no-capture` | 只启动 HTTP/WS 服务，不捕获屏幕 |
 | `--snapshot [路径]` | 一次性整屏截图诊断 |
 | `--probe <序号>` | 事件注入诊断（坐标/鼠标/滚轮/点击是否到达目标窗口） |
 
-完整帮助：`./mac-stream/.build/release/vibework --help`
+完整帮助：`./mac-stream/.build/release/vibepilot --help`
 
 ## 三、手机端使用（浏览器打开）
 
@@ -176,10 +176,10 @@ iPhone 预览： http://192.168.1.54:8090   （同一 Wi-Fi 下）
 
 ```bash
 # 一次性截图，判断捕获管线是否正常
-./mac-stream/.build/release/vibework --snapshot
+./mac-stream/.build/release/vibepilot --snapshot
 
 # 事件注入诊断（对比坐标、验证鼠标/滚轮/点击是否到达窗口）
-./mac-stream/.build/release/vibework --probe 1
+./mac-stream/.build/release/vibepilot --probe 1
 ```
 
 ## 八、项目结构速览
@@ -187,7 +187,7 @@ iPhone 预览： http://192.168.1.54:8090   （同一 Wi-Fi 下）
 ```
 mac-stream/
   Sources/VibeCore/      共享引擎（捕获/注入/推流/AI/二维码）
-  Sources/vibework/      CLI 入口
+  Sources/VibePilot/      CLI 入口
   Sources/vibeapp/       桌面 App（实验性）
 web/viewer.html          手机端页面副本
 scripts/                 打包与工具脚本

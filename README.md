@@ -1,4 +1,4 @@
-# vibework — 局域网 AI 编程遥控器
+# VibePilot — 局域网 AI 编程遥控器
 
 把 Mac 上指定 App 的窗口（比如 Cursor / VS Code / Terminal）实时推流到同一局域网内的浏览器或 iPhone。
 
@@ -87,7 +87,7 @@ node scripts/ws-test.js 8090
 | 有页面但画面不动/黑屏 | 屏幕录制授权没生效——完全退出 Terminal 重开再启动；确认目标窗口没最小化 |
 | 画面模糊或卡顿 | 降低参数：`--fps 10 --max-width 960 --quality 0.5` |
 | 崩溃 CGS_REQUIRE_INIT | 旧版本的 bug，已修复（启动时初始化 AppKit）。重新 `make build` 即可 |
-| 一直「等待画面帧」 | 先跑 `vibework --snapshot`：黑图=显示器熄屏/锁屏（用 `caffeinate -d`）；正常图=权限/管线没问题。录屏权限要授予**运行 vibework 的终端**，不是被录制的 App |
+| 一直「等待画面帧」 | 先跑 `vibepilot --snapshot`：黑图=显示器熄屏/锁屏（用 `caffeinate -d`）；正常图=权限/管线没问题。录屏权限要授予**运行 VibePilot 的终端**，不是被录制的 App |
 
 ## 参数
 
@@ -102,7 +102,7 @@ node scripts/ws-test.js 8090
 | `--demo` | 关 | 不捕获屏幕，推一张模拟测试画面（用于联调） |
 | `--no-capture` | 关 | 只启动 HTTP/WS 服务，不捕获 |
 | `--screen` | 关 | 捕获整个主屏幕（窗口捕获不出帧时用于诊断/兜底） |
-| `--snapshot <路径>` | 关 | 一次性整屏截图诊断，默认保存到 /tmp/vibework-snapshot.jpg |
+| `--snapshot <路径>` | 关 | 一次性整屏截图诊断，默认保存到 /tmp/VibePilot-snapshot.jpg |
 
 ## 目录结构
 
@@ -118,7 +118,7 @@ mac-stream/
     TextOptimizer.swift   DeepSeek 文本润色
     KeyStore.swift        API Key 持久化
     Demo.swift            演示画面生成器
-  Sources/vibework/
+  Sources/VibePilot/
     CLI.swift           命令行入口、窗口选择
   Sources/vibeapp/      桌面 App（VibePilot）
     VibePilotApp.swift    AppKit 入口
@@ -138,7 +138,7 @@ build/                  App 打包产物（git 忽略）
 ## 权限说明（重要）
 
 - **屏幕录制**：必需，一次性授权。授权是常驻的，不会「定期提醒」；只有在系统升级、更换终端或重新安装 App 时才可能重新弹窗。
-- **辅助功能（Accessibility）**：手机控制 Mac（触控板/按键/文字注入）必需。到 系统设置 → 隐私与安全性 → 辅助功能 勾选运行 vibework 的终端，然后重启 vibework。未授权时画面预览不受影响，但控制不生效。
+- **辅助功能（Accessibility）**：手机控制 Mac（触控板/按键/文字注入）必需。到 系统设置 → 隐私与安全性 → 辅助功能 勾选运行 VibePilot 的终端，然后重启 VibePilot。未授权时画面预览不受影响，但控制不生效。
 - 屏幕录制无法捕获 DRM 保护内容（会黑屏），这是系统限制。
 
 ## 手机控制（Phase 2）
@@ -157,13 +157,13 @@ build/                  App 打包产物（git 忽略）
 ### 访问口令与 DeepSeek Key
 
 ```bash
-./mac-stream/.build/release/vibework --window 0 --port 8090 --fps 15 \
+./mac-stream/.build/release/vibepilot --window 0 --port 8090 --fps 15 \
   --token 你的口令 \
   --deepseek-key sk-你的DeepSeekKey
 ```
 
 - `--token`：手机打开页面会先要求输入口令，口令错误拒绝连接（401）
-- `--deepseek-key`：启动时配置；也可以在手机上点 ⚙ 输入。Key 会保存到 `~/.vibework/deepseek.key`（权限 600），重启不丢失
+- `--deepseek-key`：启动时配置；也可以在手机上点 ⚙ 输入。Key 会保存到 `~/.VibePilot/deepseek.key`（权限 600），重启不丢失
 - 窗口自动激活：注入点击/按键/文字前，会自动把被控窗口（如 Cursor）激活到最前，避免误操作到其他 App
 
 ### 多应用切换（暂缓）

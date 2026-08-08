@@ -1,4 +1,4 @@
-# vibework · 功能清单
+# VibePilot · 功能清单
 
 > 局域网「AI 编程遥控器」：Mac 端抓取目标应用（Cursor / Codex 等）窗口实时推流到手机，
 > 手机网页远程查看与控制。本文档汇总当前全部功能点与使用方式。
@@ -44,7 +44,7 @@
 - **DeepSeek 文本润色 ✨**：纠正错别字、理顺口语化表达，使用 `deepseek-v4-flash` 模型
 - **优化结果弹窗**：润色结果全屏展示，可编辑后「确认并发送」（自动回车）
 - **Loading 状态**：优化进行中按钮变为 ⏳ 并禁用，35 秒超时提示
-- **API Key 持久化**：Key 保存到 `~/.vibework/deepseek.key`（权限 600），重启不丢失；启动参数 `--deepseek-key` 或页面 ⚙ 均可配置
+- **API Key 持久化**：Key 保存到 `~/.VibePilot/deepseek.key`（权限 600），重启不丢失；启动参数 `--deepseek-key` 或页面 ⚙ 均可配置
 - **Key 有效性校验脚本**：`bash scripts/check-deepseek.sh sk-xxx` 一键验证
 
 ## 六、安全与访问
@@ -89,10 +89,10 @@ open build/VibePilot.app
 
 ```bash
 # 查看可捕获窗口
-./mac-stream/.build/release/vibework --list
+./mac-stream/.build/release/vibepilot --list
 
 # 启动（推荐）
-./mac-stream/.build/release/vibework --window <序号> --port 8090 --fps 15 \
+./mac-stream/.build/release/vibepilot --window <序号> --port 8090 --fps 15 \
   --token 你的口令 --deepseek-key sk-你的DeepSeekKey
 
 # 编译

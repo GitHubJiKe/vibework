@@ -7,7 +7,7 @@ public let viewerHTML = """
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>vibework · 远程控制</title>
+<title>VibePilot · 远程控制</title>
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; height: 100%; background: #000; overflow: hidden; font-family: -apple-system, "PingFang SC", sans-serif; touch-action: manipulation; }
@@ -50,7 +50,7 @@ public let viewerHTML = """
 <body>
 <div id="login">
   <div class="box">
-    <h2>vibework</h2>
+    <h2>VibePilot</h2>
     <input id="token" type="password" placeholder="请输入访问口令" autocomplete="off">
     <button id="loginBtn">连接</button>
     <div id="loginErr"></div>
@@ -116,7 +116,7 @@ public let viewerHTML = """
   // 服务端注入：已加载的应用列表（多应用时显示切换栏）
   const APPS = __APPS__;
   let authToken = '';
-  try { authToken = localStorage.getItem('vibework_token') || ''; } catch (e) {}
+  try { authToken = localStorage.getItem('vibepilot_token') || ''; } catch (e) {}
 
   let ws = null;
   let shownUrl = null;
@@ -193,7 +193,7 @@ public let viewerHTML = """
     const t = tokenInput.value.trim();
     if (!t) { loginErr.textContent = '请输入口令'; return; }
     authToken = t;
-    try { localStorage.setItem('vibework_token', t); } catch (e) {}
+    try { localStorage.setItem('vibepilot_token', t); } catch (e) {}
     login.style.display = 'none';
     loginVisible = false;
     loginErr.textContent = '';

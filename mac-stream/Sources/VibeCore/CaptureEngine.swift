@@ -23,7 +23,7 @@ public final class CaptureEngine: NSObject {
 
     private var stream: SCStream?
     private let onFrame: FrameHandler
-    private let queue = DispatchQueue(label: "vibework.capture", qos: .userInteractive)
+    private let queue = DispatchQueue(label: "vibepilot.capture", qos: .userInteractive)
     private var firstBufferLogged = false
     private var lastLoggedStatus: SCFrameStatus?
     private var noImageBufferLogged = false

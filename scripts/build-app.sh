@@ -25,7 +25,7 @@ cat > "$APP_DIR/Contents/Info.plist" <<'PLIST'
     <key>CFBundleDisplayName</key>
     <string>VibePilot</string>
     <key>CFBundleIdentifier</key>
-    <string>com.vibework.vibepilot</string>
+    <string>com.vibepilot.app</string>
     <key>CFBundleExecutable</key>
     <string>vibeapp</string>
     <key>CFBundlePackageType</key>
@@ -39,7 +39,7 @@ cat > "$APP_DIR/Contents/Info.plist" <<'PLIST'
     <key>NSHighResolutionCapable</key>
     <true/>
     <key>NSHumanReadableCopyright</key>
-    <string>vibework</string>
+    <string>VibePilot</string>
 </dict>
 </plist>
 PLIST

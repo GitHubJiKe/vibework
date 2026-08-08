@@ -50,7 +50,7 @@ struct VibeworkMain {
 
         if args.contains("--snapshot") {
             let flagIndex = args.firstIndex(of: "--snapshot")!
-            var snapshotPath = "/tmp/vibework-snapshot.jpg"
+            var snapshotPath = "/tmp/vibepilot-snapshot.jpg"
             if args.indices.contains(flagIndex + 1), !args[flagIndex + 1].hasPrefix("-") {
                 snapshotPath = args[flagIndex + 1]
             }
@@ -353,7 +353,7 @@ struct VibeworkMain {
     }
 
     /// 事件注入诊断：验证窗口坐标、鼠标移动、滚轮是否真正到达目标窗口。
-    /// 用法: vibework --probe <窗口序号>
+    /// 用法: vibepilot --probe <窗口序号>
     private static func runProbe(windowIndex: Int) async {
         do {
             let windows = try await CaptureEngine.availableWindows()
@@ -438,11 +438,11 @@ struct VibeworkMain {
     }
 
     private static let usage = """
-    vibework · mac-stream
+    vibepilot · mac-stream
 
     用法：
-      vibework --list                  列出可捕获的窗口
-      vibework [选项]                  启动推流
+      vibepilot --list                  列出可捕获的窗口
+      vibepilot [选项]                  启动推流
 
     选项：
       --window <序号>   捕获指定窗口（配合 --list 查看序号）
@@ -454,17 +454,17 @@ struct VibeworkMain {
       --demo            推模拟画面，不捕获屏幕
       --no-capture      只启动 HTTP/WS 服务，不捕获
       --screen          捕获整个主屏幕（窗口捕获不出帧时用于诊断/兜底）
-      --snapshot [路径]  一次性整屏截图诊断，默认 /tmp/vibework-snapshot.jpg
+      --snapshot [路径]  一次性整屏截图诊断，默认 /tmp/vibepilot-snapshot.jpg
       --probe <序号>    事件注入诊断：验证坐标/鼠标/滚轮/点击是否到达目标窗口
       --token <口令>     访问口令：手机打开页面需输入口令才能连接
       --deepseek-key <key>   DeepSeek API Key：AI 润色输入文本（页面 ⚙ 也可设置）
 
     示例：
-      vibework --list
-      vibework --window 2 --port 9090 --fps 20
-      vibework --apps 2,3,4 --port 9090 --fps 15
-      vibework --screen --port 8090
-      vibework --snapshot
-      vibework --window 2 --port 8090 --token mypass --deepseek-key sk-xxxx
+      vibepilot --list
+      vibepilot --window 2 --port 9090 --fps 20
+      vibepilot --apps 2,3,4 --port 9090 --fps 15
+      vibepilot --screen --port 8090
+      vibepilot --snapshot
+      vibepilot --window 2 --port 8090 --token mypass --deepseek-key sk-xxxx
     """
 }

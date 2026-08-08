@@ -1,4 +1,4 @@
-# vibework · 踩坑记录
+# VibePilot · 踩坑记录
 
 > 开发过程中遇到并解决的真实问题，按「现象 → 原因 → 解决 → 教训」整理。
 > 希望后来者少走弯路。
@@ -68,7 +68,7 @@
 - **原因**：
   - `deepseek-chat` / `deepseek-reasoner` 已于 2026-07-24 弃用，现行模型名为 `deepseek-v4-flash` / `deepseek-v4-pro`；
   - 页面 ⚙ 设置的 Key 只存在内存，重启即丢失，回退到启动参数的旧 Key。
-- **解决**：模型名改用 `deepseek-v4-flash`；Key 持久化到 `~/.vibework/deepseek.key`（权限 600），重启自动加载。
+- **解决**：模型名改用 `deepseek-v4-flash`；Key 持久化到 `~/.VibePilot/deepseek.key`（权限 600），重启自动加载。
 - **教训**：外部 API 的模型名会变，要查官方文档；「内存态配置」对常驻服务是坑，能持久化就持久化。
 
 ## 10. 多窗口捕获：优先「按需切换」而非「同时多流」
