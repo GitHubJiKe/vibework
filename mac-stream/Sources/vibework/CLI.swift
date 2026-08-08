@@ -270,6 +270,20 @@ struct VibeworkMain {
             print("仅 HTTP/WS 服务模式（--no-capture），不捕获屏幕。")
         }
         print("----------------------------------------")
+        print("本机预览：    http://localhost:\(port)")
+        if let ip = NetInfo.localIP() {
+            let url = "http://\(ip):\(port)"
+            print("iPhone 预览： \(url)   （同一 Wi-Fi 下）")
+            if let qr = QRCode.terminalQRCode(from: url) {
+                print("用手机相机扫码访问：")
+                print(qr)
+            }
+        } else {
+            print("iPhone 预览： http://<Mac 局域网 IP>:\(port)   （同一 Wi-Fi 下）")
+            print("查 IP：       ipconfig getifaddr en0")
+        }
+        print("按 Ctrl+C 退出")
+        print("----------------------------------------")
 
         while true {
             try await Task.sleep(for: .seconds(1))
