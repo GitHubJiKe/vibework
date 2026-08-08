@@ -139,7 +139,7 @@ public let viewerHTML = """
   let aiLoading = false;
   let aiTimeout = null;
   let currentApp = 0;
-  const ZOOM_STEPS = [1, 1.5, 2.5];
+  const ZOOM_STEPS = [1, 1.5, 2];
   let zoomStep = 0;
 
   // 多应用切换栏
