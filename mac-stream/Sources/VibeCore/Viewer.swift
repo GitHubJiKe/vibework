@@ -18,6 +18,7 @@ public let viewerHTML = """
   html, body { margin: 0; height: 100%; background: #000; overflow: hidden; font-family: -apple-system, "PingFang SC", sans-serif; touch-action: manipulation; }
   #stage { position: fixed; inset: 0 0 138px 0; display: flex; align-items: center; justify-content: center; background: #000; }
   #view { max-width: 100%; max-height: 100%; object-fit: contain; pointer-events: none; }
+  #view { transition: transform .15s ease; }
   #touchpad { position: absolute; inset: 0; touch-action: none; }
   #status { position: fixed; left: 10px; top: 10px; padding: 5px 10px; border-radius: 6px; background: rgba(0,0,0,.6); color: #fff; font-size: 12px; pointer-events: none; z-index: 5; max-width: 75%; }
   #appbar { position: fixed; top: 8px; left: 50%; transform: translateX(-50%); z-index: 6; display: none; gap: 6px; max-width: 82%; overflow-x: auto; background: rgba(0,0,0,.6); border: 1px solid #333; border-radius: 10px; padding: 4px; scrollbar-width: none; }
@@ -86,6 +87,7 @@ public let viewerHTML = """
     <button data-key="tab" title="Tab：补全 / 缩进">⇥</button>
     <button data-key="esc" title="Esc：取消 / 退出">⎋</button>
     <button data-key="backspace" title="清空输入框">⌫</button>
+    <button id="zoom" title="画面缩放（放大聚焦窗口中心）">🔍</button>
   </div>
   <div id="typing" class="row">
     <input id="text" placeholder="输入或说出内容" autocomplete="off" autocapitalize="off" autocorrect="off" enterkeyhint="send">
@@ -111,6 +113,7 @@ public let viewerHTML = """
   const aiText = document.getElementById('aiText');
   const aiCancelBtn = document.getElementById('aiCancel');
   const aiSendBtn = document.getElementById('aiSend');
+  const zoomBtn = document.getElementById('zoom');
   const appbar = document.getElementById('appbar');
   const tokenInput = document.getElementById('token');
   const loginBtn = document.getElementById('loginBtn');
@@ -136,6 +139,8 @@ public let viewerHTML = """
   let aiLoading = false;
   let aiTimeout = null;
   let currentApp = 0;
+  const ZOOM_STEPS = [1, 1.5, 2.5];
+  let zoomStep = 0;
 
   // 多应用切换栏
   function renderAppBar() {
@@ -409,6 +414,17 @@ public let viewerHTML = """
         send({ type: 'key', key: key, flags: flags });
       }
     });
+  });
+
+  // 画面缩放：放大聚焦窗口中心（宽屏窗口在手机上完整显示时太小）
+  function applyZoom() {
+    const scale = ZOOM_STEPS[zoomStep];
+    view.style.transform = scale === 1 ? '' : `scale(${scale})`;
+    zoomBtn.textContent = scale === 1 ? '🔍' : `🔍 ${scale}x`;
+  }
+  zoomBtn.addEventListener('click', () => {
+    zoomStep = (zoomStep + 1) % ZOOM_STEPS.length;
+    applyZoom();
   });
 
   // 文字输入
